@@ -153,7 +153,10 @@ def main():
         "--num", action="store_true", help="Use number selection for commit messages"
     )
     parser.add_argument(
-        "--max_chars", type=int, default=75, help="Maximum number of characters for each commit message (default: 75)"
+        "--max_chars",
+        type=int,
+        default=75,
+        help="Suggested maximum number of characters for each commit message (default: 75)",
     )
     args = parser.parse_args()
 
