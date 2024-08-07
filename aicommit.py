@@ -152,6 +152,9 @@ def main():
     parser.add_argument(
         "--num", action="store_true", help="Use number selection for commit messages"
     )
+    parser.add_argument(
+        "--max_chars", type=int, default=75, help="Maximum number of characters for each commit message (default: 75)"
+    )
     args = parser.parse_args()
 
     start_time = time.time()
@@ -164,7 +167,8 @@ def main():
     prompt = f"""
     Your task is to generate three concise, informative git commit messages based on the following git diff.
     Be sure that each commit message reflects the entire diff.
-    It is very important that the entire commit is clear and understandable with each of the three options.
+    It is very important that the entire commit is clear and understandable with each of the three options. 
+    Try to fit each commit message in {args.max_chars} characters.
     Each message should be on a new line, starting with a number and a period (e.g., '1.', '2.', '3.').
     Here's the diff:\n\n{diff}"""
 
