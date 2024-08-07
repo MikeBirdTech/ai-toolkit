@@ -38,3 +38,4 @@ Options
 - Arrow keys by default
 - Use Vim keys with `--vim`
 - Use number selection with `--num`
+- Use `--max_chars=X` to set up the commit message length (default is 75 chars)
