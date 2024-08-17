@@ -1,0 +1,6 @@
+# Ignore virtual environment
+venv/
+
+# Editors
+.idea/
+.vscode/
