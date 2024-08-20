@@ -1,0 +1,7 @@
+anthropic
+beautifulsoup4
+exa-py
+groq
+ollama
+PyPDF2
+requests
