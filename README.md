@@ -1,6 +1,6 @@
-# Automations
+# AI Toolkit
 
-A collection of community created scripts to automate your life
+A collection of community created scripts to leverage AI to improve your life
 
 ## AI CLI
 
