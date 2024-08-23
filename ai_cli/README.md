@@ -9,7 +9,11 @@ Use LLMs to generate terminal commands from natural language queries.
    ```
    pip install -r requirements.txt
    ```
-3. Set up environment variables:
+3. Make the script executable:
+   ```
+   chmod +x ai_cli.py
+   ```
+4. Set up environment variables:
    - Set `GROQ_API_KEY` for Groq service
    - Set `FAST_OLLAMA_MODEL` to your preferred fast Ollama model (optional)
 
