@@ -16,7 +16,7 @@ Use LLMs to generate your git commit messages.
 ## Usage
 
 ```
-python aicommit.py [options]
+python ai_commit.py [options]
 ```
 
 ### Options
@@ -31,9 +31,9 @@ python aicommit.py [options]
 ### Examples
 
 ```
-python aicommit.py "Fixed bug in login functionality"
-python aicommit.py "Added new feature for user authentication" --service groq
-python aicommit.py "Refactored code for better performance" --model llama3.1
+python ai_commit.py "Fixed bug in login functionality"
+python ai_commit.py "Added new feature for user authentication" --service groq
+python ai_commit.py "Refactored code for better performance" --model llama3.1
 ```
 
 ## Notes
