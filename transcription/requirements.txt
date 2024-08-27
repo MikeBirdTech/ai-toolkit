@@ -1,0 +1,3 @@
+faster-whisper
+pyannote.audio
+torch

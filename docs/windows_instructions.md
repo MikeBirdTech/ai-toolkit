@@ -25,7 +25,25 @@ In Windows PowerShell:
    pip install -r requirements.txt
    ```
 
-4. Set up environment variables:
+4. Install FFmpeg:
+
+   - Download the FFmpeg build from [ffmpeg.org](https://ffmpeg.org/download.html)
+   - Extract the contents to a folder (e.g., `C:\ffmpeg`)
+   - Add the `bin` folder to your system PATH:
+     - Right-click on 'This PC' or 'My Computer' and select 'Properties'
+     - Click on 'Advanced system settings'
+     - Click on 'Environment Variables'
+     - Under 'System variables', find and select 'Path', then click 'Edit'
+     - Click 'New' and add the path to the FFmpeg bin folder (e.g., `C:\ffmpeg\bin`)
+     - Click 'OK' to close all dialogs
+
+   Verify the installation by opening a new PowerShell window and running:
+
+   ```
+   ffmpeg -version
+   ```
+
+5. Set up environment variables:
 
    ```
    $Env:EXA_API_KEY="<your exa api key>"

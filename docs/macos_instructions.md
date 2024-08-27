@@ -6,7 +6,7 @@ General instructions for setting up and running the scripts on macOS
 
 Install the following:
 
-- `brew install python3 fzf`
+- `brew install python3 fzf ffmpeg`
 
 ## Setup
 
@@ -29,7 +29,19 @@ Install the following:
    pip install -r requirements.txt
    ```
 
-4. Set up environment variables:
+4. Verify FFmpeg installation:
+
+   ```
+   ffmpeg -version
+   ```
+
+   If FFmpeg is not installed, you can install it using Homebrew:
+
+   ```
+   brew install ffmpeg
+   ```
+
+5. Set up environment variables:
 
    ```
    export EXA_API_KEY="<your exa api key>"
