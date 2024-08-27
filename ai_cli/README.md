@@ -2,6 +2,12 @@
 
 Use LLMs to generate terminal commands from natural language queries.
 
+## Demo Video
+
+[![AI CLI Demo](https://img.youtube.com/vi/jsq1pQnHM-0/0.jpg)](https://www.youtube.com/watch?v=jsq1pQnHM-0)
+
+Click the image above to watch the tutorial for setting up AI CLI.
+
 ## Installation
 
 1. Navigate to the `ai_cli` directory
