@@ -13,3 +13,7 @@ Use LLMs to generate your commit messages
 ## Research Assistant
 
 Use LLMs to research and summarize information from multiple sources
+
+## Transcription
+
+Use Whipser and Pyannote to transcript and diarize videos
