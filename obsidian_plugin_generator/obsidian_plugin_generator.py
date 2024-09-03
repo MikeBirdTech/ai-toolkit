@@ -1,5 +1,5 @@
 import os
-import sys
+import time
 import argparse
 import subprocess
 import json
@@ -8,37 +8,90 @@ import shutil
 from typing import Dict, Any
 
 import ollama
-from groq import Groq
+from groq import Groq, APIError
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.style import Style
+from rich.text import Text
+
+console = Console()
+
+ASCII_ART = """
+   ___  _         _     _ _                     
+  / _ \| |__  ___(_) __| (_) __ _ _ __          
+ | | | | '_ \/ __| |/ _` | |/ _` | '_ \         
+ | |_| | |_) \__ \ | (_| | | (_| | | | |        
+  \___/|_.__/|___/_|\__,_|_|\__,_|_| |_|        
+  ____  _             _                         
+ |  _ \| |_   _  __ _(_)_ __                    
+ | |_) | | | | |/ _` | | '_ \                   
+ |  __/| | |_| | (_| | | | | |                  
+ |_|   |_|\__,_|\__, |_|_| |_|                  
+   ____         |___/             _             
+  / ___| ___ _ __   ___ _ __ __ _| |_ ___  _ __ 
+ | |  _ / _ \ '_ \ / _ \ '__/ _` | __/ _ \| '__|
+ | |_| |  __/ | | |  __/ | | (_| | || (_) | |   
+  \____|\___|_| |_|\___|_|  \__,_|\__\___/|_|   
+"""
 
 DEFAULT_OBSIDIAN_VAULT_PATH = os.path.expanduser("~/Documents/ObsidianVault")
 SAMPLE_PLUGIN_REPO = "https://github.com/obsidianmd/obsidian-sample-plugin.git"
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
 GROQ_MODEL = "llama-3.1-70b-versatile"
 
+PURPLE_STYLE = Style(color="purple")
+LIGHT_PURPLE_STYLE = Style(color="bright_magenta")
+ORANGE_STYLE = Style(color="#F67504")
+
 
 class AIService:
     def __init__(self, service_type: str):
         self.service_type = service_type
 
-    def query(self, prompt: str) -> str:
-        if self.service_type == "ollama":
-            return self.query_ollama(prompt)
-        elif self.service_type == "groq":
-            return self.query_groq(prompt)
-        else:
-            raise ValueError(f"Unsupported AI service: {self.service_type}")
+    def query(self, prompt: str, max_retries: int = 3) -> str:
+        retries = 0
+        while retries < max_retries:
+            try:
+                if self.service_type == "ollama":
+                    return self.query_ollama(prompt)
+                elif self.service_type == "groq":
+                    return self.query_groq(prompt)
+                else:
+                    raise ValueError(f"Unsupported AI service: {self.service_type}")
+            except APIError as e:
+                retries += 1
+                if retries == max_retries:
+                    console.print(
+                        f"[red]Error: Unable to complete the request after {max_retries} attempts.[/red]"
+                    )
+                    console.print(f"[yellow]Error details: {str(e)}[/yellow]")
+                    console.print(
+                        "[yellow]The plugin generation process will continue with default values.[/yellow]"
+                    )
+                    return "SUFFICIENT INFO"  # Return a default response to continue the process
+                else:
+                    wait_time = 2**retries  # Exponential backoff
+                    console.print(
+                        f"[yellow]API error occurred. Retrying in {wait_time} seconds...[/yellow]"
+                    )
+                    time.sleep(wait_time)
 
     def query_ollama(self, prompt: str) -> str:
         response = ollama.generate(model=OLLAMA_MODEL, prompt=prompt)
         return response["response"]
 
     def query_groq(self, prompt: str) -> str:
-        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model=GROQ_MODEL,
-        )
-        return chat_completion.choices[0].message.content
+        try:
+            client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+            chat_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=GROQ_MODEL,
+            )
+            return chat_completion.choices[0].message.content
+        except APIError as e:
+            console.print(f"[red]Groq API Error: {str(e)}[/red]")
+            raise
 
 
 def read_file(file_path: str) -> str:
@@ -105,7 +158,9 @@ def process_generated_content(content: str) -> str:
 
 
 def handle_existing_directory(plugin_dir: str) -> bool:
-    print(f"\nWARNING: The directory '{plugin_dir}' already exists.")
+    console.print(
+        f"\n[yellow]WARNING:[/yellow] The directory '{plugin_dir}' already exists."
+    )
     while True:
         choice = input("Do you want to (O)verwrite, (R)ename, or (C)ancel? ").lower()
         if choice == "o":
@@ -139,10 +194,8 @@ def create_plugin(ai_service: AIService, plugin_info: Dict[str, Any]) -> None:
         if next_question == "SUFFICIENT INFO":
             break
 
-        print(f"\nQ: {next_question}")
-        print("-" * 40)
+        console.print(f"\n[dark_magenta]Q: {next_question}[/dark_magenta]")
         answer = input("Your answer: ")
-        print("-" * 40)
         conversation_history += f"Q: {next_question}\nA: {answer}\n\n"
 
     plugin_dir = os.path.join(
@@ -160,14 +213,21 @@ def create_plugin(ai_service: AIService, plugin_info: Dict[str, Any]) -> None:
 
     os.makedirs(plugin_dir, exist_ok=True)
 
-    try:
-        # Clone sample plugin and remove .git directory
-        subprocess.run(["git", "clone", SAMPLE_PLUGIN_REPO, plugin_dir], check=True)
-        subprocess.run(["rm", "-rf", os.path.join(plugin_dir, ".git")], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error cloning the sample plugin: {e}")
-        print("Please make sure you have git installed and have internet access.")
-        return
+    with console.status("[cyan]Cloning sample plugin...", spinner="dots") as status:
+        try:
+            subprocess.run(
+                ["git", "clone", SAMPLE_PLUGIN_REPO, plugin_dir],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(["rm", "-rf", os.path.join(plugin_dir, ".git")], check=True)
+        except subprocess.CalledProcessError as e:
+            console.print(f"[red]Error cloning the sample plugin: {e}[/red]")
+            console.print(
+                "[yellow]Please make sure you have git installed and have internet access.[/yellow]"
+            )
+            return
 
     # Read existing main.ts
     main_ts_path = os.path.join(plugin_dir, "main.ts")
@@ -203,8 +263,13 @@ def create_plugin(ai_service: AIService, plugin_info: Dict[str, Any]) -> None:
 
     Remember, this should aim to save the user 90% of the time it would take to create the plugin from scratch.
     """
-    generated_content = ai_service.query(prompt)
-    processed_content = process_generated_content(generated_content)
+    try:
+        generated_content = ai_service.query(prompt)
+        processed_content = process_generated_content(generated_content)
+    except Exception as e:
+        console.print(f"[red]Error generating plugin code: {str(e)}[/red]")
+        console.print("[yellow]Using default sample plugin code.[/yellow]")
+        processed_content = existing_code
 
     # Write the processed content to main.ts
     write_file(main_ts_path, processed_content)
@@ -221,20 +286,42 @@ def create_plugin(ai_service: AIService, plugin_info: Dict[str, Any]) -> None:
             json.dump(data, f, indent=2)
             f.truncate()
 
-    print(f"\nPlugin '{plugin_info['name']}' created successfully in {plugin_dir}")
-    print("\nNext steps:")
-    print("=" * 40)
-    print(
-        "1. Review the enhanced main.ts file, including the commented explanation and todo list at the end."
+    success_message = Text(
+        f"Plugin '{plugin_info['name']}' created successfully in {plugin_dir}",
+        style=ORANGE_STYLE,
     )
-    print("2. Complete any TODOs and make necessary adjustments.")
-    print("3. Run 'npm install' in the plugin directory to install dependencies.")
-    print(
-        "4. Run 'npm run dev' to compile the plugin and start the development process."
+    console.print(Panel(success_message, expand=False, border_style=ORANGE_STYLE))
+
+    next_steps = Table(show_header=False, box=None)
+    next_steps.add_column(style=LIGHT_PURPLE_STYLE, no_wrap=True)
+    next_steps.add_row("1. Install required Python libraries:")
+    next_steps.add_row("   pip install obsidian")
+    next_steps.add_row(
+        "2. Review the enhanced main.ts file, including the commented explanation and todo list at the end."
     )
-    print("5. Test your plugin in Obsidian and make any further adjustments as needed.")
-    print("6. When ready to use, ensure the plugin is compiled with 'npm run build'.")
-    print("=" * 40)
+    next_steps.add_row("3. Complete any TODOs and make necessary adjustments.")
+    next_steps.add_row(
+        "4. Run 'npm install' in the plugin directory to install dependencies."
+    )
+    next_steps.add_row(
+        "5. Run 'npm run dev' to compile the plugin and start the development process."
+    )
+    next_steps.add_row(
+        "6. Test your plugin in Obsidian and make any further adjustments as needed."
+    )
+    next_steps.add_row(
+        "7. When ready to use, ensure the plugin is compiled with 'npm run build'."
+    )
+
+    console.print(
+        Panel(
+            next_steps,
+            expand=False,
+            border_style=PURPLE_STYLE,
+            title="Next Steps",
+            title_align="center",
+        )
+    )
 
 
 def main():
@@ -253,13 +340,19 @@ def main():
     )
     args = parser.parse_args()
 
+    ascii_text = Text(ASCII_ART)
+    ascii_text.stylize("purple", 0, 380)
+    ascii_text.stylize("dark_magenta", 380, 600)
+    ascii_text.stylize("bright_magenta", 600, 796)
+    console.print(ascii_text)
+
     ai_service = AIService(args.ai_service)
 
     plugin_info = {
         "name": args.name,
         "id": args.name.lower().replace(" ", "-"),
         "description": input(
-            "Enter a general description of what the plugin should do: "
+            "Enter a general description of what your plugin will do: "
         ),
         "vault_path": args.vault_path,
     }

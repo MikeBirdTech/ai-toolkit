@@ -10,6 +10,10 @@ Use LLMs to generate terminal commands from natural language queries
 
 Use LLMs to generate your commit messages
 
+## Obsidian Plugin Generator
+
+LLM-powered wizard for generating an Obsidian plugins
+
 ## Research Assistant
 
 Use LLMs to research and summarize information from multiple sources
