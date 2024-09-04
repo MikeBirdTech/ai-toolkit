@@ -2,6 +2,12 @@
 
 An intelligent tool to generate custom Obsidian plugins based on user descriptions and answers.
 
+## Demo Video
+
+[![Obsidian Plugin Generator Demo](https://img.youtube.com/vi/YXgOXf6oDBQ/0.jpg)](https://www.youtube.com/watch?v=YXgOXf6oDBQ)
+
+Click the image above to watch the demo of using the Obsidian Plugin Generator.
+
 ## Installation
 
 1. Navigate to the `obsidian_plugin_generator` directory
