@@ -1,0 +1,5 @@
+pyaudio
+SpeechRecognition
+rich
+ollama
+groq
