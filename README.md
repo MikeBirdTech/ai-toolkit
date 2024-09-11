@@ -2,6 +2,10 @@
 
 A collection of community created scripts to leverage AI to improve your life
 
+## Activity Tracker
+
+Use AI to categorize and analyze your daily activities with Obsidian integration
+
 ## AI CLI
 
 Use LLMs to generate terminal commands from natural language queries
