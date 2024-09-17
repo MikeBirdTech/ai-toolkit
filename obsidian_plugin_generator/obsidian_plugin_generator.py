@@ -294,15 +294,15 @@ def create_plugin(ai_service: AIService, plugin_info: Dict[str, Any]) -> None:
 
     next_steps = Table(show_header=False, box=None)
     next_steps.add_column(style=LIGHT_PURPLE_STYLE, no_wrap=True)
-    next_steps.add_row("1. Install required Python libraries:")
-    next_steps.add_row("   pip install obsidian")
     next_steps.add_row(
-        "2. Review the enhanced main.ts file, including the commented explanation and todo list at the end."
+        "1. Run 'npm install' in the plugin directory to install dependencies."
     )
-    next_steps.add_row("3. Complete any TODOs and make necessary adjustments.")
+    next_steps.add_row("2. Install required Python libraries:")
+    next_steps.add_row("   npm install obsidian")
     next_steps.add_row(
-        "4. Run 'npm install' in the plugin directory to install dependencies."
+        "3. Review the enhanced main.ts file, including the commented explanation and todo list at the end."
     )
+    next_steps.add_row("4. Complete any TODOs and make necessary adjustments.")
     next_steps.add_row(
         "5. Run 'npm run dev' to compile the plugin and start the development process."
     )
