@@ -22,6 +22,10 @@ LLM-powered wizard for generating an Obsidian plugins
 
 Use LLMs to research and summarize information from multiple sources
 
+## ShallowGram
+
+A local, free alternative to Deepgram using Whisperfile for speech-to-text and Ollama for advanced speech analytics (summarization, sentiment, intent, and topic detection)
+
 ## Transcription
 
 Use Whipser and Pyannote to transcript and diarize videos

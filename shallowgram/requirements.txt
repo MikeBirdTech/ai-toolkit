@@ -1,0 +1,6 @@
+argparse
+ollama
+pyaudio
+wave
+pydub
+rich
