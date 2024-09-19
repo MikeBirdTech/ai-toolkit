@@ -74,6 +74,9 @@ def main():
         description = "\n".join(lines[1:]).strip()
 
         update_pr(repo_name, pr_number, title, description)
+    except KeyError as e:
+        print(f"Missing environment variable: {e}")
+        sys.exit(1)
     except Exception as e:
         print(f"An error occurred: {e}")
         sys.exit(1)

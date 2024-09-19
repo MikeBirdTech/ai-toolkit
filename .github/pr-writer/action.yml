@@ -8,15 +8,19 @@ inputs:
   github_token:
     description: "GitHub token"
     required: true
+
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v4 # Checks out your repository code
     - uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - run: pip install PyGithub groq
+    - run: pip install -r ./.github/pr-writer/requirements.txt
       shell: bash
-    - run: python ${{ github.action_path }}/generate_summary.py
+    - run: ls -la ./.github/pr-writer/
+      shell: bash
+    - run: python ./.github/pr-writer/pr-writer.py
       shell: bash
       env:
         GROQ_API_KEY: ${{ inputs.groq_api_key }}
