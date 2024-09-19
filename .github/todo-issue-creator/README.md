@@ -33,5 +33,3 @@ jobs:
           groq_api_key: \${{ secrets.GROQ_API_KEY }}
           github_token: \${{ secrets.GITHUB_TOKEN }}
 ```
-
-<!-- TODO: Add better instructions for set up -->
