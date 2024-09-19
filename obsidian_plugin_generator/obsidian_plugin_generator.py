@@ -253,7 +253,7 @@ def create_plugin(ai_service: AIService, plugin_info: Dict[str, Any]) -> None:
     1. Use TypeScript and follow Obsidian plugin best practices.
     2. Ensure the plugin follows the correct anatomy with onload() and onunload() methods.
     3. Add clear comments explaining the code and any assumptions made.
-    4. Include TODO comments for any parts that might need further customization or implementation.
+    4. Include todo comments for any parts that might need further customization or implementation.
     5. Use async/await for asynchronous operations.
     6. Handle potential errors gracefully.
     7. If using external APIs, implement proper error handling and rate limiting.
@@ -302,7 +302,7 @@ def create_plugin(ai_service: AIService, plugin_info: Dict[str, Any]) -> None:
     next_steps.add_row(
         "3. Review the enhanced main.ts file, including the commented explanation and todo list at the end."
     )
-    next_steps.add_row("4. Complete any TODOs and make necessary adjustments.")
+    next_steps.add_row("4. Complete any to-do items and make necessary adjustments.")
     next_steps.add_row(
         "5. Run 'npm run dev' to compile the plugin and start the development process."
     )

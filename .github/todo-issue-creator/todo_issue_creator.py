@@ -34,7 +34,7 @@ class IssuesResponse(BaseModel):
 
 def scan_for_todos():
     todos = []
-    exclude_dirs = {".git", "venv", "__pycache__", "node_modules", ".github"}
+    exclude_dirs = {".git", "venv", "__pycache__", "node_modules"}
     exclude_exts = {
         ".pyc",
         ".json",
@@ -62,7 +62,7 @@ def scan_for_todos():
     }
 
     for root, dirs, files in os.walk("."):
-        dirs[:] = [d for d in dirs if d not in exclude_dirs and not d.startswith(".")]
+        dirs[:] = [d for d in dirs if d not in exclude_dirs]
         for file in files:
             if any(file.endswith(ext) for ext in exclude_exts):
                 continue
@@ -79,7 +79,7 @@ def scan_for_todos():
                 with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
-                    # Initialize a set to keep track of line numbers where TODOs are found
+                    # Initialize a set to keep track of line numbers where todos are found
                     todo_line_numbers = set()
 
                     # Handle multi-line comments
@@ -133,20 +133,20 @@ def scan_for_todos():
 
 def generate_issue_body(todo_items):
     prompt = """
-You are an AI assistant that helps developers by turning TODO comments into GitHub issues.
+You are an AI assistant that helps developers by turning todo comments into GitHub issues.
 
-Each TODO comment includes a file path, line number, and the comment text.
+Each todo comment includes a file path, line number, and the comment text.
 
-Please generate a detailed issue description for each TODO, including:
+Please generate a detailed issue description for each todo, including:
 
 - A clear and concise title.
-- The context or purpose of the TODO.
+- The context or purpose of the todo.
 - Any suggested implementation details.
 - Any potential impact or dependencies.
 
 Provide the output as a JSON object with an "issues" field containing an array of objects, each with "title" and "body" fields.
 
-Here are the TODO items:
+Here are the todo items:
 
 """
 
