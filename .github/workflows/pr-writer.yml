@@ -17,4 +17,4 @@ jobs:
         uses: ./.github/pr-summary
         with:
           groq_api_key: ${{ secrets.GROQ_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}

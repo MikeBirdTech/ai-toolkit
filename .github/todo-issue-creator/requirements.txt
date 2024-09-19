@@ -1,2 +1,4 @@
 PyGithub
 groq
+instructor
+pydantic
