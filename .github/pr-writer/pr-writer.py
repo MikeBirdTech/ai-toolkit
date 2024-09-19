@@ -36,6 +36,8 @@ Based on the following commit messages, generate a concise and informative PR ti
    - **Notes**: Any important considerations or follow-up actions.
 
 Maintain a professional and clear tone appropriate for a developer audience.
+
+Do not write "PR Title" or "PR Description" in the fields. No preamble 
 """
 
     response = groq_client.chat.completions.create(
