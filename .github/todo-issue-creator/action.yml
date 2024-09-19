@@ -1,0 +1,24 @@
+name: "TODO Issue Creator"
+description: "Scans codebase for TODO comments and creates GitHub issues"
+inputs:
+  groq_api_key:
+    description: "API key for Groq"
+    required: true
+  github_token:
+    description: "GitHub token"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - run: pip install -r ${{ github.action_path }}/requirements.txt
+      shell: bash
+    - run: python ${{ github.action_path }}/todo_issue_creator.py
+      shell: bash
+      env:
+        GROQ_API_KEY: ${{ inputs.groq_api_key }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
