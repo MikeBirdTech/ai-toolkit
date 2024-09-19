@@ -2,7 +2,7 @@ name: PR Summary
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened, synchronize]
 
 permissions:
   issues: write
@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   summarize:
+    if: ${{ github.event.sender.login != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
