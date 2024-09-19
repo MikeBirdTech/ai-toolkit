@@ -1,0 +1,24 @@
+name: "PR Summary Generator"
+description: "Generates a summary for Pull Requests based on commit messages"
+
+inputs:
+  groq_api_key:
+    description: "API key for Groq"
+    required: true
+  github_token:
+    description: "GitHub token"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - run: pip install PyGithub groq
+      shell: bash
+    - run: python ${{ github.action_path }}/generate_summary.py
+      shell: bash
+      env:
+        GROQ_API_KEY: ${{ inputs.groq_api_key }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
