@@ -4,3 +4,5 @@ venv/
 # Editors
 .idea/
 .vscode/
+.aider*
+.env
