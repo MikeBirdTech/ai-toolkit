@@ -5,8 +5,7 @@ import platform
 import subprocess
 import sys
 
-import ollama
-from groq import Groq
+from ai_service.ai_service import AIService
 
 
 def get_environment_info():
@@ -17,39 +16,9 @@ def get_environment_info():
     }
 
 
-def query_ollama(prompt: str, model: str = None) -> str:
-    try:
-        model = model or os.getenv("FAST_OLLAMA_MODEL", "llama3.1")
-        response = ollama.generate(
-            model=model,
-            prompt=prompt,
-            options={"num_predict": 128},
-            keep_alive="2m",
-        )
-        return response["response"]
-    except Exception as e:
-        raise Exception(f"Error querying Ollama: {e}")
-
-
-def query_groq(prompt: str, model: str = None) -> str:
-    try:
-        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-        model = model or "llama-3.1-8b-instant"
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ],
-            model=model,
-        )
-        return chat_completion.choices[0].message.content
-    except Exception as e:
-        raise Exception(f"Error querying Groq: {e}")
-
 
 def query_ai_service(input_text, service_type, model, env_info):
+    ai_service = AIService(service_type, model)
     prompt = f"""You are an expert programmer who is a master of the terminal. 
     Your task is to come up with the perfect command to accomplish the following task. 
     Respond with the command only. No comments. No backticks around the command. 
@@ -61,14 +30,9 @@ def query_ai_service(input_text, service_type, model, env_info):
     Shell: {env_info['shell']}
     Do not hallucinate.
     Here is the task: {input_text}"""
-
+    
     try:
-        if service_type == "ollama":
-            return query_ollama(prompt, model)
-        elif service_type == "groq":
-            return query_groq(prompt, model)
-        else:
-            raise ValueError(f"Unknown service type: {service_type}")
+        return ai_service.query(prompt)
     except Exception as e:
         print(f"Error querying AI service: {e}")
         sys.exit(1)
@@ -91,26 +55,16 @@ def execute_command(command):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate and execute terminal commands using AI."
-    )
-    parser.add_argument("input", nargs="+", help="The task description")
-    parser.add_argument(
-        "--service",
-        choices=["ollama", "groq"],
-        default="ollama",
-        help="AI service to use",
-    )
-    parser.add_argument("--model", help="Optional: Specify the model to use")
+    parser = argparse.ArgumentParser(description="AI CLI Tool")
+    parser.add_argument("input", nargs="*", help="Input text for the AI")
+    parser.add_argument("--service", choices=["ollama", "groq", "anthropic"], default="ollama", help="AI service to use")
+    parser.add_argument("--model", help="Model to use for the selected service")
     args = parser.parse_args()
 
     input_text = " ".join(args.input)
-
-    # Only use the model if explicitly specified
-    model = args.model if args.model else None
-
     env_info = get_environment_info()
-    command = query_ai_service(input_text, args.service, model, env_info)
+
+    command = query_ai_service(input_text, args.service, args.model, env_info)
 
     print(f"\033[92m{command}\033[0m")
 

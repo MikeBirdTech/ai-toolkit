@@ -29,3 +29,7 @@ A local, free alternative to Deepgram using Whisperfile for speech-to-text and O
 ## Transcription
 
 Use Whipser and Pyannote to transcript and diarize videos
+
+## AI Service
+
+A unified interface for interacting with various AI services, including Ollama, Groq, and Anthropic. Supports multiple services, configurable models, and includes an automatic retry mechanism.

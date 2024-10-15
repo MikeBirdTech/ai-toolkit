@@ -6,12 +6,7 @@ import sys
 import time
 from typing import List, Optional
 
-import ollama
-from groq import Groq
-
-# Use the environment variable for the Ollama model
-OLLAMA_MODEL = os.getenv("FAST_OLLAMA_MODEL", "llama3.1")
-GROQ_MODEL = "llama-3.1-8b-instant"
+from ai_service.ai_service import AIService
 
 
 def get_git_diff() -> str:
@@ -26,48 +21,20 @@ def get_git_diff() -> str:
         sys.exit(1)
 
 
-def query_ollama(prompt: str) -> str:
-    """Query Ollama with the given prompt."""
+def query_ai_service(
+    prompt: str, service_type: str, ollama_model: str, groq_model: str
+) -> str:
+    """Query AI service with the given prompt."""
     try:
         print("Generating commit messages...", end="", flush=True)
-        response = ollama.generate(
-            model=OLLAMA_MODEL,
-            prompt=prompt,
-            system="You are an expert programmer that values clear, unambiguous communication and are specialized in generating concise and informative git commit messages.",
-            options={
-                "num_predict": 128,
-            },
-            keep_alive="2m",
+        ai_service = AIService(
+            service_type, model=ollama_model if service_type == "ollama" else groq_model
         )
+        response = ai_service.query(prompt)
         print("Done!")
-        return response["response"]
+        return response
     except Exception as e:
-        print(f"\nError querying Ollama: {e}")
-        sys.exit(1)
-
-
-def query_groq(prompt: str) -> str:
-    """Query Groq with the given prompt."""
-    try:
-        print("Generating commit messages...", end="", flush=True)
-        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an expert programmer that values clear, unambiguous communication and are specialized in generating concise and informative git commit messages.",
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ],
-            model=GROQ_MODEL,
-        )
-        print("Done!")
-        return chat_completion.choices[0].message.content
-    except Exception as e:
-        print(f"\nError querying Groq: {e}")
+        print(f"\nError querying {service_type.capitalize()}: {e}")
         sys.exit(1)
 
 
@@ -138,11 +105,16 @@ def create_commit(message: str):
 
 
 def main():
+    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
+    GROQ_MODEL = "llama-3.1-70b-versatile"
+
     parser = argparse.ArgumentParser(
         description="Generate git commit messages using LLMs."
     )
     parser.add_argument(
-        "--groq", action="store_true", help="Use Groq API instead of Ollama"
+        "--groq",
+        action="store_true",
+        help="Use Groq API instead of Ollama (default is Ollama)",
     )
     parser.add_argument(
         "--analytics", action="store_true", help="Display performance analytics"
@@ -177,9 +149,9 @@ def main():
     Here's the diff:\n\n{diff}"""
 
     if args.groq:
-        response = query_groq(prompt)
+        response = query_ai_service(prompt, "groq", OLLAMA_MODEL, GROQ_MODEL)
     else:
-        response = query_ollama(prompt)
+        response = query_ai_service(prompt, "ollama", OLLAMA_MODEL, GROQ_MODEL)
 
     end_time = time.time()
 
@@ -204,9 +176,9 @@ def main():
         if selected_message == "regenerate":
             start_time = time.time()
             if args.groq:
-                response = query_groq(prompt)
+                response = query_ai_service(prompt, "groq", OLLAMA_MODEL, GROQ_MODEL)
             else:
-                response = query_ollama(prompt)
+                response = query_ai_service(prompt, "ollama", OLLAMA_MODEL, GROQ_MODEL)
             end_time = time.time()
 
             if args.analytics:

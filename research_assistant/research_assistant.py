@@ -22,8 +22,8 @@ import requests
 DEFAULT_VAULT_PATH = "path/to/vault"
 DEFAULT_FIRECRAWL_BASE_URL = "http://localhost:3002"
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
-GROQ_MODEL = "llama-3.1-8b-instant"
-ANTHROPIC_MODEL = "claude-3-opus-20240229"
+GROQ_MODEL = "llama-3.1-70b-versatile"
+ANTHROPIC_MODEL = "claude-3-5-sonnet-20240620"
 
 # Exa search configuration
 EXCLUDED_DOMAINS = [

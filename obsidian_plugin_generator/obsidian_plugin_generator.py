@@ -7,8 +7,7 @@ import re
 import shutil
 from typing import Dict, Any
 
-import ollama
-from groq import Groq, APIError
+from ai_service import AIService
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -37,61 +36,12 @@ ASCII_ART = """
 
 DEFAULT_OBSIDIAN_VAULT_PATH = os.path.expanduser("~/Documents/ObsidianVault")
 SAMPLE_PLUGIN_REPO = "https://github.com/obsidianmd/obsidian-sample-plugin.git"
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
-GROQ_MODEL = "llama-3.1-70b-versatile"
 
 PURPLE_STYLE = Style(color="purple")
 LIGHT_PURPLE_STYLE = Style(color="bright_magenta")
 ORANGE_STYLE = Style(color="#F67504")
 
 
-class AIService:
-    def __init__(self, service_type: str):
-        self.service_type = service_type
-
-    def query(self, prompt: str, max_retries: int = 3) -> str:
-        retries = 0
-        while retries < max_retries:
-            try:
-                if self.service_type == "ollama":
-                    return self.query_ollama(prompt)
-                elif self.service_type == "groq":
-                    return self.query_groq(prompt)
-                else:
-                    raise ValueError(f"Unsupported AI service: {self.service_type}")
-            except APIError as e:
-                retries += 1
-                if retries == max_retries:
-                    console.print(
-                        f"[red]Error: Unable to complete the request after {max_retries} attempts.[/red]"
-                    )
-                    console.print(f"[yellow]Error details: {str(e)}[/yellow]")
-                    console.print(
-                        "[yellow]The plugin generation process will continue with default values.[/yellow]"
-                    )
-                    return "SUFFICIENT INFO"  # Return a default response to continue the process
-                else:
-                    wait_time = 2**retries  # Exponential backoff
-                    console.print(
-                        f"[yellow]API error occurred. Retrying in {wait_time} seconds...[/yellow]"
-                    )
-                    time.sleep(wait_time)
-
-    def query_ollama(self, prompt: str) -> str:
-        response = ollama.generate(model=OLLAMA_MODEL, prompt=prompt)
-        return response["response"]
-
-    def query_groq(self, prompt: str) -> str:
-        try:
-            client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-            chat_completion = client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model=GROQ_MODEL,
-            )
-            return chat_completion.choices[0].message.content
-        except APIError as e:
-            console.print(f"[red]Groq API Error: {str(e)}[/red]")
-            raise
 
 
 def read_file(file_path: str) -> str:
@@ -334,9 +284,13 @@ def main():
     )
     parser.add_argument(
         "--ai-service",
-        choices=["ollama", "groq"],
+        choices=["ollama", "groq", "anthropic"],
         default="ollama",
         help="AI service to use",
+    )
+    parser.add_argument(
+        "--model",
+        help="Model to use for the chosen AI service",
     )
     args = parser.parse_args()
 
@@ -346,7 +300,7 @@ def main():
     ascii_text.stylize("bright_magenta", 600, 796)
     console.print(ascii_text)
 
-    ai_service = AIService(args.ai_service)
+    ai_service = AIService(args.ai_service, args.model)
 
     plugin_info = {
         "name": args.name,
